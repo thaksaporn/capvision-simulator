@@ -1,0 +1,56 @@
+name: Deploy CapVision to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'dist/**'
+      - 'tests_engine.mjs'
+      - 'tests_kinematics.mjs'
+      - 'tests_shaft.mjs'
+      - 'tests_render_budget.mjs'
+      - '.github/workflows/pages.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: github-pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - name: Validate simulator and model motion
+        run: |
+          node tests_engine.mjs
+          node tests_kinematics.mjs
+          node tests_shaft.mjs
+          node tests_render_budget.mjs
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+      - name: Upload website
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: dist
+          retention-days: 1
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy website
+        id: deployment
+        uses: actions/deploy-pages@v4
