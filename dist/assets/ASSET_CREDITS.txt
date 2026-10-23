@@ -1,0 +1,5 @@
+Studio Small 09 HDRI by Sergej Majboroda / Poly Haven. CC0 1.0.
+https://polyhaven.com/a/studio_small_09
+https://polyhaven.com/license
+Three.js r180: MIT, see ../vendor/LICENSE.
+Machine and caps: existing CapVision project, re-exported with named moving parts.

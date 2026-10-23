@@ -1,0 +1,22 @@
+{
+  "revision": "W2",
+  "scope": "Browser simulation visuals; original Blender/PLC unchanged",
+  "modelBytes": 22452536,
+  "modelNodes": [
+    "Cabinet",
+    "Hood",
+    "Machine",
+    "MainBelt",
+    "MainRoller",
+    "Pusher",
+    "ReceivingBelt",
+    "TailRoller"
+  ],
+  "engineTests": 10,
+  "bridgeMockTests": 5,
+  "mailboxTests": 5,
+  "kinematicSamples": 100,
+  "physicalPLCVerified": false,
+  "GXNativeVerified": false,
+  "notes": "Kinematic animation, not a rigid-body collision model; no live vision inference."
+}

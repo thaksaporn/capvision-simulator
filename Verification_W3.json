@@ -1,0 +1,18 @@
+{
+  "revision": "W3",
+  "trianglesBefore": 393352,
+  "trianglesOverview": 116217,
+  "overviewBytesBefore": 22452536,
+  "overviewBytesAfter": 6524736,
+  "staticShadowUpdatesDuringOrbit": 1,
+  "browserSample": {
+    "fpsBeforeIdle": 143,
+    "fpsAfterIdle": 144,
+    "fpsAfterOrbitRunning": 143,
+    "note": "Observed in in-app browser on this host, near 144 Hz cap. These are not a measurement of the user Chrome session."
+  },
+  "renderDrawCallsRunningSample": 52,
+  "status": "simulation and mock bridge tests passed; browser orbit, instanced caps and lazy cabinet detail checked",
+  "physicalPLCVerified": false,
+  "githubRepository": "https://github.com/thaksaporn/capvision-simulator"
+}

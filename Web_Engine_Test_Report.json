@@ -1,0 +1,45 @@
+{
+  "method": "Actual WebAssembly C core and browser Ladder interpreter in Node, no hardware/GX connection",
+  "tests": [
+    {
+      "name": "No automatic startup and all real Y locked",
+      "result": "PASS"
+    },
+    {
+      "name": "Mixed caps: PASS, A, A missed/B; tail motor and Home cycle",
+      "result": "PASS"
+    },
+    {
+      "name": "pc_lost faults and drops motor",
+      "result": "PASS"
+    },
+    {
+      "name": "vision_timeout faults and drops motor",
+      "result": "PASS"
+    },
+    {
+      "name": "encoder_stall faults and drops motor",
+      "result": "PASS"
+    },
+    {
+      "name": "b_miss faults and drops motor",
+      "result": "PASS"
+    },
+    {
+      "name": "Air loss and receiving sensor jam stop via Ladder",
+      "result": "PASS"
+    },
+    {
+      "name": "E-stop feedback, release, safety reset, fault reset: no auto restart",
+      "result": "PASS"
+    },
+    {
+      "name": "STOP invalidates in-flight cap; restart requires queue clear",
+      "result": "PASS"
+    },
+    {
+      "name": "Returned external PLC data gates motion; stale bridge cannot run",
+      "result": "PASS"
+    }
+  ]
+}

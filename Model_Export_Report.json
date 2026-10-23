@@ -1,0 +1,13 @@
+{
+  "source_machine": "CapVision_Realistic_C3_Editable_Parts.blend",
+  "source_caps": "CapVision_Realistic_C3_Animated.blend",
+  "original_files_modified": false,
+  "machine_bytes": 14195700,
+  "sha256": "6aa15e99fd027a15fe49019be36ee9bbe25e9638e14f0b7caea9a425f70ced27",
+  "nodes": [
+    "Cabinet",
+    "Hood",
+    "Machine",
+    "Pusher"
+  ]
+}

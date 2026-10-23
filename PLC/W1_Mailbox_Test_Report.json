@@ -1,0 +1,25 @@
+{
+  "method": "Instruction-level independent interpreter; native GX compilation/hardware NOT verified",
+  "tests": [
+    {
+      "name": "Startup disables remote and clears stale requests",
+      "result": "PASS"
+    },
+    {
+      "name": "Remote START rejected until physical remote enable and heartbeat",
+      "result": "PASS"
+    },
+    {
+      "name": "Web heartbeat loss faults 108 and drops enable; reset never restarts",
+      "result": "PASS"
+    },
+    {
+      "name": "STOP physical input overrides remote START in same scan",
+      "result": "PASS"
+    },
+    {
+      "name": "Withdrawing remote permission during remote run stops",
+      "result": "PASS"
+    }
+  ]
+}

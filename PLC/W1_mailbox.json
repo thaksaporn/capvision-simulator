@@ -1,0 +1,15 @@
+{
+  "signature": {
+    "D7190": 23107
+  },
+  "remote_enable": "M7190",
+  "commands": {
+    "start": "M7200",
+    "stop": "M7201",
+    "reset": "M7202"
+  },
+  "heartbeat": "D7200",
+  "heartbeat_timeout_ms": 500,
+  "remote_fault": 108,
+  "native_gx_compile_verified": false
+}

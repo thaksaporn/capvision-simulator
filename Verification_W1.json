@@ -1,0 +1,22 @@
+{
+  "version": "W1",
+  "web_simulation_ready": true,
+  "original_model_used": true,
+  "live_core": "C compiled to WebAssembly, no imports",
+  "plc_logic": "B2 instruction interpreter in browser; GX adapter can hand authority to GX",
+  "tests": {
+    "web_engine": 10,
+    "bridge_mock": 5,
+    "mailbox_instruction": 5
+  },
+  "gx_actual_connected": false,
+  "gx_blocker": "MX Component COM class not registered, HRESULT 0x80040154",
+  "plc_actual_connected": false,
+  "plc_blocker": "User has not configured IP / SLMP",
+  "real_plc_defaults": "read-only; commands require W1 signature and M7190, never write X/Y",
+  "native_W1_GX_compile_verified": false,
+  "actual_hardware_tested": false,
+  "PLC_download_performed": false,
+  "network_settings_changed": false,
+  "software_camera_results_only": true
+}

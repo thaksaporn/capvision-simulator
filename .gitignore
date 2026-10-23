@@ -1,0 +1,11 @@
+__pycache__/
+*.pyc
+*.log
+.openai/local/
+node_modules/
+
+.env
+.env.*
+!.env.example
+
+.openai/

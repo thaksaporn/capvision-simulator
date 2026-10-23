@@ -1,0 +1,6 @@
+{
+  "method": "Local mock SLMP TCP peer and HTTP security/permissions; no real PLC or MX Component",
+  "tests_run": 5,
+  "failures": 0,
+  "errors": 0
+}
