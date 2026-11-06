@@ -62,10 +62,10 @@ export class Plant {
    const k=b.web_event_get(0),id=b.web_event_get(1),c=this.caps.find(c=>c.id===id);
    if(k===1&&c){c.resultAt=this.ms+80;this.log('Encoder ถึงกล้อง → Trigger / Cap ID '+id,id)}
    if(k===2&&c){c.state='CHUTE';c.exitAt=this.ms;this.log('ฝาดีเข้ารางลาด',id)}
-   if(k===3&&c){c.aAt=this.ms;if(c.outcome==='A'&&!['a_miss','b_miss'].includes(this.faultMode)){c.ejectAt=this.ms;c.rejectX=.35;}this.log('สั่งโซลินอยด์ A',id)}
+   if(k===3&&c){c.aAt=this.ms;if(c.outcome==='A'&&!['a_miss','b_miss'].includes(this.faultMode)){c.ejectAt=this.ms;c.rejectX=.35;}this.log('สั่งโซลินอยด์ A',id);this.onReject?.('A',id)}
    if(k===4&&c){c.state='REJECTED';c.rejectAt=this.ms;c.ejectAt=c.bAt||c.aAt||this.ms;c.rejectX=c.bAt ? .86 : .35;this.log('B2 ยืนยันรีเจค A',id)}
    if(k===5)this.log('A ไม่ยืนยัน → รอรีเจคสำรอง B',id);
-   if(k===6&&c){c.bAt=this.ms;if(this.faultMode!=='b_miss'){c.ejectAt=this.ms;c.rejectX=.86;}this.log('สั่งกระบอก B',id)}
+   if(k===6&&c){c.bAt=this.ms;if(this.faultMode!=='b_miss'){c.ejectAt=this.ms;c.rejectX=.86;}this.log('สั่งกระบอก B',id);this.onReject?.('B',id)}
    if(k===7&&c){c.state='REJECTED';c.rejectAt=this.ms;c.ejectAt=c.bAt||c.aAt||this.ms;c.rejectX=c.bAt ? .86 : .35;this.log('B3 ยืนยันรีเจค B',id)}
    if(k===8)this.log('FAULT: '+(boardFaults[id]||id));
   }
