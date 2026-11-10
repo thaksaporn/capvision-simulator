@@ -12,6 +12,7 @@ LD SM402
 RST M7190
 RST M7222
 RST M7223
+ZRST M7230 M7238
 ZRST M7200 M7202
 MOV K0 D7200
 MOV K0 D7201
@@ -302,7 +303,7 @@ ORI M115
 OUT M512
 LD M2
 OUT M513
-; [Title] 13 เอาต์พุตจริงล็อก: M7001 ต้องเปิด / M7000 ต้องปิด
+; [Title] 13 เอาต์พุตจริงล็อก: M7001 ต้องเปิด / M7000 ต้องปิด · Y5/Y6 ย้ายไปเป็นไฟสถานะชุดฝึก (W3)
 LD M503
 AND M7001
 ANI M7000
@@ -315,18 +316,6 @@ ANI M7000
 AND X16
 AND X17
 OUT Y4
-LD M505
-AND M7001
-ANI M7000
-AND X16
-AND X17
-OUT Y5
-LD M506
-AND M7001
-ANI M7000
-AND X16
-AND X17
-OUT Y6
 LD M510
 AND M7001
 ANI M7000
@@ -346,19 +335,71 @@ OUT Y13
 LD SM401
 OUT Y0
 LD SM401
-OUT Y1
-LD SM401
-OUT Y2
-LD SM401
 OUT Y7
 LD SM401
 OUT Y14
 LD SM401
-OUT Y15
+OUT Y1
 LD SM401
-OUT Y16
+OUT Y2
 LD SM401
 OUT Y17
+; [Title] W2 อนุญาตไฟรีเจคจากเว็บ: Remote+Heartbeat / Hardware arm (M7001 และไม่ใช่ SIM) · เป็นไฟแสดงผลจึงไม่ผูก Safety X16/X17 (ถ้ากลับไปใช้วาล์วจริงต้องใส่ AND M114 / AND M115 คืน)
+LD M7220
+AND M7001
+ANI M7000
+OUT M7234
+; [Title] W2 รีเจค A: M7230 ขอบขึ้น → Y15 ไฟรีเจค A ติด 0.5 วินาทีแล้วดับ / ถอนสิทธิ์ดับทันที
+LDP M7230
+AND M7234
+SET M7232
+LD M7232
+OUT T30 K5
+LD T30
+ORI M7234
+RST M7232
+LD M7232
+AND M7234
+OUT Y15
+; [Title] W2 รีเจค B: M7231 ขอบขึ้น → Y16 ไฟรีเจค B ติด 0.5 วินาทีแล้วดับ / ถอนสิทธิ์ดับทันที
+LDP M7231
+AND M7234
+SET M7233
+LD M7233
+OUT T31 K5
+LD T31
+ORI M7234
+RST M7233
+LD M7233
+AND M7234
+OUT Y16
+; [Title] W3 ชุดฝึก: ลิงก์เว็บพร้อม = Heartbeat เว็บ + Remote enable (M7220) และ Hardware arm (M7001 ON / M7000 OFF) → M7238
+LD M7220
+AND M7001
+ANI M7000
+OUT M7238
+; [Title] W3 ชุดฝึก START: กด X0 (ขอบขึ้น) หรือ START จากเว็บ (M7236) → จำสถานะเดิน M7235 · ต้องลิงก์พร้อมและไม่ได้กด STOP
+LDP X0
+LDP M7236
+ORB
+AND M7238
+ANI X1
+ANI M7237
+SET M7235
+; [Title] W3 ชุดฝึก STOP: กด X1 หรือ STOP จากเว็บ (M7237) หรือลิงก์เว็บขาด → หยุด (STOP มีลำดับเหนือ START)
+LD X1
+OR M7237
+ORI M7238
+RST M7235
+; [Title] W3 ชุดฝึก ไฟสถานะ: Y5 = เครื่องทำงาน / Y6 = หยุด (ติดเฉพาะตอน Hardware arm)
+LD M7235
+AND M7001
+ANI M7000
+OUT Y5
+LDI M7235
+AND M7001
+ANI M7000
+OUT Y6
 ; [Title] 14 สถานะเครื่อง: 0 ไม่พร้อม / 10 READY / 20 RUN / 30 FAULT
 LD SM400
 MOV K0 D20
@@ -384,6 +425,10 @@ MOV D7200 D7201
 RST M7200
 RST M7201
 RST M7202
+RST M7230
+RST M7231
+RST M7236
+RST M7237
 LDI M1
 RST M7223
 END 

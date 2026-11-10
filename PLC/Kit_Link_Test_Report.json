@@ -1,0 +1,69 @@
+{
+  "method": "KitLink against a simulated PLC latch (150 ms) and web machine (300 ms start), 100 ms polling",
+  "tests": [
+    {
+      "name": "X0: PLC latch on → web machine starts, nothing is sent back to the PLC",
+      "result": "PASS"
+    },
+    {
+      "name": "X1: PLC latch off → web machine stops, nothing is sent back",
+      "result": "PASS"
+    },
+    {
+      "name": "X0 then X1 before the web finished starting → start cancelled, web stays stopped",
+      "result": "PASS"
+    },
+    {
+      "name": "Web START button while PLC stopped → one START request, PLC follows (Y5)",
+      "result": "PASS"
+    },
+    {
+      "name": "Web STOP button while running → one STOP request, PLC follows (Y6)",
+      "result": "PASS"
+    },
+    {
+      "name": "PLC refuses START (not armed) → web machine is stopped again, both stopped",
+      "result": "PASS"
+    },
+    {
+      "name": "Web cannot start (E-STOP / tab hidden) → PLC told to stop, no retry loop",
+      "result": "PASS"
+    },
+    {
+      "name": "Fault stops the web while running → PLC stopped, never restarted automatically",
+      "result": "PASS"
+    },
+    {
+      "name": "Connect while the PLC is already running → web starts to match",
+      "result": "PASS"
+    },
+    {
+      "name": "Connect while the web is running but PLC stopped → web stops to match",
+      "result": "PASS"
+    },
+    {
+      "name": "Steady running for 60 s → no actions, no requests",
+      "result": "PASS"
+    },
+    {
+      "name": "Web START then web STOP before the PLC answered → both end stopped",
+      "result": "PASS"
+    },
+    {
+      "name": "Web link lost (PLC drops latch by heartbeat) → web machine stops",
+      "result": "PASS"
+    },
+    {
+      "name": "Many presses in a row (X0, X1, X0, X1, X0) → ends running, never a request",
+      "result": "PASS"
+    },
+    {
+      "name": "Demo restart while running (web stops then starts again at once) → ends running on both sides",
+      "result": "PASS"
+    },
+    {
+      "name": "Web STOP then web START again before the PLC answered → both end running",
+      "result": "PASS"
+    }
+  ]
+}

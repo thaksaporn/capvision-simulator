@@ -42,6 +42,8 @@ export class Plant {
   p.M7100=this.g(2);p.M7101=this.g(3);p.M7102=this.g(4);p.M7106=+tail;p.M7050=1;p.M7052=+(this.faultMode==='air_lost');
   if(!this.external)this.plc.scan();
   const run=!!p.M503,enable=!!p.M505;
+  // A stop abandons tracking: frozen (UNCERTAIN) caps get no late camera result, otherwise the board would
+  // reject it as an unknown ID and raise a fault on every stop that happens mid-inspection.
   if(this.previousRun&&!run){this.log('หยุดมอเตอร์ · ถอน RUN_ENABLE');for(const c of this.caps)if(['LINE','UNCERTAIN'].includes(c.state)){c.frozenPose=capPose(c,this.ms);c.state='UNCERTAIN';this.dirty=true}}
   this.previousRun=run;
   if(p.M506&&!this.oldReset){b.web_reset(enable);if(!enable){this.session++;b.web_hello(this.session,this.ms);this.log('รีเซทบอร์ด / session ใหม่ · ไม่เริ่มเครื่องเอง')}}this.oldReset=p.M506;
@@ -53,7 +55,7 @@ export class Plant {
   let ca=false,cb=false,home=true;
   for(const c of this.caps){
    if(c.bAt&&this.ms-c.bAt>=50&&this.ms-c.bAt<500)home=false;
-   if(c.resultAt&&this.ms>=c.resultAt&&!c.resultSent&&this.faultMode!=='vision_timeout'){c.resultSent=true;b.web_result(this.session,c.id,c.outcome==='PASS'?1:0,this.seq++);this.log('กล้องจำลอง: '+(c.outcome==='PASS'?'PASS':'FAIL'),c.id)}
+   if(c.resultAt&&this.ms>=c.resultAt&&!c.resultSent&&c.state!=='UNCERTAIN'&&this.faultMode!=='vision_timeout'){c.resultSent=true;b.web_result(this.session,c.id,c.outcome==='PASS'?1:0,this.seq++);this.log('กล้องจำลอง: '+(c.outcome==='PASS'?'PASS':'FAIL'),c.id)}
    if(c.aAt&&!c.aConfirmed&&c.outcome==='A'&&!['a_miss','b_miss'].includes(this.faultMode)&&this.ms-c.aAt>=50){ca=true;c.aConfirmed=true;}
    if(c.bAt&&!c.bConfirmed&&this.faultMode!=='b_miss'&&this.ms-c.bAt>=50){cb=true;c.bConfirmed=true;}
   }

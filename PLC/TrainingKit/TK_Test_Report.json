@@ -1,0 +1,65 @@
+{
+  "method": "Instruction-level interpreter with simulated HSC CH3; GX Works3 compile and real FX5U NOT verified",
+  "tests": [
+    {
+      "name": "Power up: motor OFF, READY lamp on, HSC CH3 started, PPR=600",
+      "result": "PASS"
+    },
+    {
+      "name": "START held while powering up does not run the motor",
+      "result": "PASS"
+    },
+    {
+      "name": "Press START: motor runs and stays on after release (seal-in), RUN lamp",
+      "result": "PASS"
+    },
+    {
+      "name": "Press STOP: motor stops and stays stopped",
+      "result": "PASS"
+    },
+    {
+      "name": "STOP and START pressed together: STOP wins",
+      "result": "PASS"
+    },
+    {
+      "name": "Holding START does not restart after STOP (edge only)",
+      "result": "PASS"
+    },
+    {
+      "name": "Broken STOP wire (NC open) stops motor and blocks START",
+      "result": "PASS"
+    },
+    {
+      "name": "Overload trips: motor stops, FAULT flashes, no restart until reset",
+      "result": "PASS"
+    },
+    {
+      "name": "RESET with overload still open keeps the fault",
+      "result": "PASS"
+    },
+    {
+      "name": "Encoder: count follows HSC, 1 rev = 600 counts, Y13 half-on/half-off",
+      "result": "PASS"
+    },
+    {
+      "name": "Encoder speed: 600 counts/s = 60 rpm forward, reverse gives negative rpm",
+      "result": "PASS"
+    },
+    {
+      "name": "Encoder reverse below zero: revs/remainder and Y13 stay consistent",
+      "result": "PASS"
+    },
+    {
+      "name": "RESET clears the encoder count to 0",
+      "result": "PASS"
+    },
+    {
+      "name": "Encoder works whether the motor is running or not (independent study encoder)",
+      "result": "PASS"
+    },
+    {
+      "name": "PPR = 0 entered by mistake: no divide-by-zero, Y13 off",
+      "result": "PASS"
+    }
+  ]
+}

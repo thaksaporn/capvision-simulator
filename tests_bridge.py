@@ -65,7 +65,8 @@ class Tests(unittest.TestCase):
   b.reject(dict(which='A'));b.reject(dict(which='B'))
   self.assertEqual([w for w in self.fake.writes if w[0].startswith('M')],[('M7230',1),('M7231',1)])
   with self.assertRaises(ValueError):b.reject(dict(which='C'))
-  with self.assertRaises(ValueError):b.command('start')                  # machine buttons stay in the web sim
+  with self.assertRaises(ValueError):b.command('reset')                  # only START/STOP go to the kit PLC
+  b.command('start');b.command('stop');self.assertIn(('M7236',1),self.fake.writes);self.assertIn(('M7237',1),self.fake.writes)
   b.state();self.assertIn(('D7200',1),self.fake.writes)                  # heartbeat keeps the ladder permission alive
   self.assertFalse(any(k.startswith(('X','Y')) for k,_ in self.fake.writes));b.disconnect()
  def test_reject_refused_outside_hybrid(self):
@@ -103,6 +104,17 @@ class Tests(unittest.TestCase):
    r=urllib.request.urlopen(urllib.request.Request(url+'/api/health',headers={'Origin':gh,'X-CapVision-Code':server.CODE}))
    self.assertTrue(json.load(r)['ok']);self.assertEqual(r.headers['Access-Control-Allow-Origin'],gh)
   finally:http.shutdown();http.server_close()
+ def test_hybrid_kit_state_and_start_stop_need_arm(self):
+  b=server.Bridge();b.connect(dict(kind='hybrid',host='127.0.0.1',port=self.fake.port));self.fake.mem.update(D7190=23107,M7190=1,M7235=1,M7238=1,Y5=1)
+  k=b.state()['kit'];self.assertEqual((k['run'],k['link'],k['lampRun'],k['lampStop']),(1,1,1,0))
+  with self.assertRaises(RuntimeError):b.command('stop')                   # not armed: nothing written
+  self.assertNotIn(('M7237',1),self.fake.writes)
+  b.armed=True;self.fake.mem['M7190']=0
+  with self.assertRaises(RuntimeError):b.command('stop')                   # remote enable off in PLC
+  self.fake.mem['M7190']=1;b.command('stop');self.assertEqual([w for w in self.fake.writes if w[0]=='M7237'],[('M7237',1)])
+  with self.assertRaises(ValueError):b.command('estop')
+  self.assertFalse(any(k.startswith(('X','Y')) for k,_ in self.fake.writes));b.disconnect()
+  s=server.Bridge();s.connect(dict(kind='slmp',host='127.0.0.1',port=self.fake.port));self.assertIsNone(s.state()['kit']);s.disconnect()
 if __name__=='__main__':
  suite=unittest.defaultTestLoader.loadTestsFromTestCase(Tests);result=unittest.TextTestRunner(verbosity=2).run(suite)
  Path(__file__).with_name('Bridge_Test_Report.json').write_text(json.dumps(dict(method='Local mock SLMP TCP peer and HTTP security/permissions; no real PLC or MX Component',tests_run=result.testsRun,failures=len(result.failures),errors=len(result.errors)),indent=2),encoding='utf-8')

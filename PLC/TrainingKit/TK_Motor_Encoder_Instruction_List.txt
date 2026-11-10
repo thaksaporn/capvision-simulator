@@ -1,0 +1,69 @@
+; [Title] TK01 เริ่มต้น: มอเตอร์ไม่หมุนเอง / ตั้งค่า PPR encoder / สั่ง HSC CH3 เริ่มนับ
+LD SM402
+ZRST M10 M29
+DMOV K600 D130
+HIOEN K0 K4 K0
+; [Title] TK02 START (X7 NO, ขอบขึ้น) - กดค้างตอนเปิดเครื่องไม่ทำให้หมุน
+LDP X7
+ANI SM402
+AND X10
+AND X15
+ANI M12
+SET M10
+; [Title] TK03 STOP (X10 NC) / Overload (X15 NC) / Fault หยุดทันที - STOP ชนะ START
+LDI X10
+ORI X15
+OR M12
+RST M10
+; [Title] TK04 Overload ค้าง Fault จนกด RESET (X11) และ X15 กลับปกติ
+LDI X15
+SET M12
+LDP X11
+AND X15
+ANI M10
+RST M12
+; [Title] TK05 ขาออกมอเตอร์ Y3 (ผ่านรีเลย์/คอนแทกเตอร์)
+LD M10
+AND X10
+AND X15
+OUT Y3
+; [Title] TK06 ไฟแสดง: Y10 RUN / Y11 พร้อม-หยุด / Y12 Fault กระพริบ 1 วินาที
+LD M10
+OUT Y10
+LDI M10
+ANI M12
+OUT Y11
+LD M12
+AND SM412
+OUT Y12
+; [Title] TK07 Encoder: อ่านค่านับ HSC CH3 (X4=A, X5=B) ลง D100
+LD SM400
+DHCMOV SD4560 D100 K0
+; [Title] TK08 Encoder: RESET (X11) ล้างค่านับเป็น 0
+LDP X11
+DHCMOV K0 SD4560 K0
+DMOV K0 D100
+DMOV K0 D146
+; [Title] TK09 Encoder: รอบสะสม D140 / เศษ D142 / Y13 ติดครึ่งรอบดับครึ่งรอบ
+LDD> D130 K0
+DDIV D130 K2 D134
+DSUB K0 D134 D138
+DDIV D100 D130 D140
+LDD>= D142 K0
+ANDD< D142 D134
+LDD< D142 D138
+ORB
+ANDD> D130 K0
+OUT Y13
+; [Title] TK10 Encoder: ความเร็ว D170 (รอบ/นาที) คำนวณทุก 1 วินาที / M20 ทิศหมุนเดินหน้า
+LDI T2
+OUT T2 K10
+LD T2
+ANDD> D130 K0
+DSUB D100 D146 D150
+DMOV D100 D146
+DMUL D150 K60 D160
+DDIV D160 D130 D170
+LDD> D150 K0
+OUT M20
+END

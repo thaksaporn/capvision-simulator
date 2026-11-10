@@ -1,0 +1,84 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1180 800" font-family="Tahoma, 'Leelawadee UI', sans-serif" font-size="14">
+<rect width="1180" height="800" fill="#fff"/>
+<text x="20" y="32" font-size="20" font-weight="bold">ชุดฝึก FX5U: ปุ่ม START/STOP สั่งมอเตอร์ + Encoder ศึกษา (ไม่ต่อกับเพลามอเตอร์)</text>
+<text x="20" y="54" font-size="12" fill="#444">อินพุตแบบ Sink (S/S ต่อ +24V, ปุ่ม/Encoder NPN ดึงลง 0V) · เอาต์พุตแบบรีเลย์ (FX5U-32MR) · เลข X/Y เป็นฐานแปด · ตรวจกับป้ายขั้วบนชุดฝึกจริงก่อนต่อ</text>
+
+<!-- 24V supply rails -->
+<rect x="20" y="80" width="200" height="70" fill="#f4f6f8" stroke="#111" stroke-width="2"/><text x="120" y="108" text-anchor="middle" font-weight="bold">PSU 24VDC</text><text x="120" y="128" text-anchor="middle" font-size="12" fill="#444">≥1 A (ใช้ของ PLC ได้ถ้าโหลดน้อย)</text>
+<text x="228" y="86" fill="#c00" font-weight="bold">+24V</text><text x="228" y="134" fill="#0050c8" font-weight="bold">0V</text>
+<path stroke="#c00" stroke-width="2.5" fill="none" d="M220 92 H1160"/><path stroke="#0050c8" stroke-width="2.5" fill="none" d="M220 140 H1130"/>
+
+<!-- PLC body -->
+<rect x="250" y="300" width="680" height="120" fill="#f4f6f8" stroke="#111" stroke-width="2"/>
+<text x="590" y="352" text-anchor="middle" font-size="22" font-weight="bold">Mitsubishi FX5U-32MR/ES</text>
+<text x="590" y="378" text-anchor="middle" font-size="12" fill="#444">HSC CH3 = X4(A)/X5(B) 2 เฟส · ค่านับ SD4560 → D100</text>
+
+<!-- input terminals (top of PLC) -->
+<g>
+ <rect x="262" y="286" width="40" height="22" fill="#fff" stroke="#111" stroke-width="1.5"/><text x="282" y="302" text-anchor="middle" font-weight="bold">S/S</text>
+ <path stroke="#c00" stroke-width="2.5" fill="none" d="M282 286 V92"/>
+ <rect x="330" y="286" width="40" height="22" fill="#fff" stroke="#111" stroke-width="1.5"/><text x="350" y="302" text-anchor="middle">X4</text>
+ <rect x="390" y="286" width="40" height="22" fill="#fff" stroke="#111" stroke-width="1.5"/><text x="410" y="302" text-anchor="middle">X5</text>
+ <rect x="480" y="286" width="40" height="22" fill="#fff" stroke="#111" stroke-width="1.5"/><text x="500" y="302" text-anchor="middle">X7</text>
+ <rect x="580" y="286" width="40" height="22" fill="#fff" stroke="#111" stroke-width="1.5"/><text x="600" y="302" text-anchor="middle">X10</text>
+ <rect x="680" y="286" width="40" height="22" fill="#fff" stroke="#111" stroke-width="1.5"/><text x="700" y="302" text-anchor="middle">X11</text>
+ <rect x="780" y="286" width="40" height="22" fill="#fff" stroke="#111" stroke-width="1.5"/><text x="800" y="302" text-anchor="middle">X15</text>
+</g>
+
+<!-- encoder -->
+<rect x="300" y="170" width="160" height="62" fill="#f4f6f8" stroke="#111" stroke-width="2"/><text x="380" y="194" text-anchor="middle" font-weight="bold">Encoder ศึกษา</text><text x="380" y="214" text-anchor="middle" font-size="12" fill="#444">NPN open collector 5–24V</text>
+<path stroke="#c00" stroke-width="2.5" fill="none" d="M318 170 V92"/><text x="322" y="164" font-size="12" fill="#444">น้ำตาล</text>
+<path stroke="#0050c8" stroke-width="2.5" fill="none" d="M442 170 V140"/><text x="400" y="164" font-size="12" fill="#444">ฟ้า</text>
+<path stroke="#111" stroke-width="2" fill="none" d="M350 232 V286"/><text x="318" y="276" font-size="12" fill="#444">ดำ A</text>
+<path stroke="#111" stroke-width="2" fill="none" d="M410 232 V286"/><text x="414" y="276" font-size="12" fill="#444">ขาว B</text>
+<text x="440" y="248" font-size="12" fill="#777">ชีลด์→0V</text>
+
+<!-- push buttons to 0V -->
+<g>
+ <path stroke="#0050c8" stroke-width="2.5" fill="none" d="M500 140 V190"/><path stroke="#111" stroke-width="2" fill="none" d="M486 190 h28 M500 182 v8 M488 204 l24 -6"/><path stroke="#111" stroke-width="2" fill="none" d="M500 204 V286"/><text x="508" y="230" font-weight="bold">START</text><text x="508" y="246" font-size="12" fill="#444">NO (เขียว)</text>
+ <path stroke="#0050c8" stroke-width="2.5" fill="none" d="M600 140 V190"/><path stroke="#111" stroke-width="2" fill="none" d="M586 190 h28 M600 182 v8 M588 198 h24 M612 198 v6"/><path stroke="#111" stroke-width="2" fill="none" d="M600 204 V286"/><text x="608" y="230" font-weight="bold">STOP</text><text x="608" y="246" font-size="12" fill="#444">NC (แดง)</text>
+ <path stroke="#0050c8" stroke-width="2.5" fill="none" d="M700 140 V190"/><path stroke="#111" stroke-width="2" fill="none" d="M686 190 h28 M700 182 v8 M688 204 l24 -6"/><path stroke="#111" stroke-width="2" fill="none" d="M700 204 V286"/><text x="708" y="230" font-weight="bold">RESET</text><text x="708" y="246" font-size="12" fill="#444">NO (เหลือง)</text>
+ <path stroke="#0050c8" stroke-width="2.5" fill="none" d="M800 140 V190"/><path stroke="#111" stroke-width="2" fill="none" d="M786 190 h28 M800 182 v8 M788 198 h24 M812 198 v6"/><path stroke="#111" stroke-width="2" fill="none" d="M800 204 V286"/><text x="808" y="230" font-weight="bold">OL 95-96</text><text x="808" y="246" font-size="12" fill="#444">NC โอเวอร์โหลด</text>
+ <text x="808" y="262" font-size="12" fill="#c00">ไม่มี OL → จั๊มป์ X15 ลง 0V</text>
+</g>
+
+<!-- output terminals (bottom of PLC) -->
+<g>
+ <rect x="262" y="412" width="54" height="22" fill="#fff" stroke="#111" stroke-width="1.5"/><text x="289" y="428" text-anchor="middle" font-weight="bold">COM0</text>
+ <rect x="340" y="412" width="40" height="22" fill="#fff" stroke="#111" stroke-width="1.5"/><text x="360" y="428" text-anchor="middle">Y3</text>
+ <rect x="520" y="412" width="54" height="22" fill="#fff" stroke="#111" stroke-width="1.5"/><text x="547" y="428" text-anchor="middle" font-weight="bold">COM2</text>
+ <rect x="600" y="412" width="40" height="22" fill="#fff" stroke="#111" stroke-width="1.5"/><text x="620" y="428" text-anchor="middle">Y10</text>
+ <rect x="680" y="412" width="40" height="22" fill="#fff" stroke="#111" stroke-width="1.5"/><text x="700" y="428" text-anchor="middle">Y11</text>
+ <rect x="760" y="412" width="40" height="22" fill="#fff" stroke="#111" stroke-width="1.5"/><text x="780" y="428" text-anchor="middle">Y12</text>
+ <rect x="840" y="412" width="40" height="22" fill="#fff" stroke="#111" stroke-width="1.5"/><text x="860" y="428" text-anchor="middle">Y13</text>
+</g>
+<!-- bottom rails -->
+<path stroke="#c00" stroke-width="2.5" fill="none" d="M1160 92 V700 H200"/><path stroke="#0050c8" stroke-width="2.5" fill="none" d="M1130 140 V760 H200"/>
+<text x="206" y="694" fill="#c00" font-weight="bold">+24V</text><text x="206" y="754" fill="#0050c8" font-weight="bold">0V</text>
+<path stroke="#c00" stroke-width="2.5" fill="none" d="M289 434 V700"/><path stroke="#c00" stroke-width="2.5" fill="none" d="M547 434 V700"/>
+
+<!-- relay K1 -->
+<path stroke="#111" stroke-width="2" fill="none" d="M360 434 V520"/><rect x="335" y="520" width="50" height="40" fill="#f4f6f8" stroke="#111" stroke-width="2"/><text x="360" y="545" text-anchor="middle" font-weight="bold">K1</text>
+<path stroke="#111" stroke-width="2" fill="none" d="M360 560 V760"/><text x="392" y="535" font-size="12" fill="#444">รีเลย์ 24VDC</text><text x="392" y="551" font-size="12" fill="#444">+ ไดโอด 1N4007</text>
+<text x="392" y="590" font-size="12" fill="#444">ขาแถบไดโอด→Y3</text>
+
+<!-- lamps -->
+<g>
+ <path stroke="#111" stroke-width="2" fill="none" d="M620 434 V540"/><circle cx="620" cy="555" r="15" fill="#f4f6f8" stroke="#111" stroke-width="2"/><path stroke="#111" stroke-width="2" fill="none" d="M609 544 l22 22 M631 544 l-22 22"/><path stroke="#111" stroke-width="2" fill="none" d="M620 570 V760"/><text x="640" y="550" font-size="12" fill="#444">RUN</text><text x="640" y="566" font-size="12" fill="#444">เขียว</text>
+ <path stroke="#111" stroke-width="2" fill="none" d="M700 434 V540"/><circle cx="700" cy="555" r="15" fill="#f4f6f8" stroke="#111" stroke-width="2"/><path stroke="#111" stroke-width="2" fill="none" d="M689 544 l22 22 M711 544 l-22 22"/><path stroke="#111" stroke-width="2" fill="none" d="M700 570 V760"/><text x="720" y="550" font-size="12" fill="#444">พร้อม</text><text x="720" y="566" font-size="12" fill="#444">แดง</text>
+ <path stroke="#111" stroke-width="2" fill="none" d="M780 434 V540"/><circle cx="780" cy="555" r="15" fill="#f4f6f8" stroke="#111" stroke-width="2"/><path stroke="#111" stroke-width="2" fill="none" d="M769 544 l22 22 M791 544 l-22 22"/><path stroke="#111" stroke-width="2" fill="none" d="M780 570 V760"/><text x="800" y="550" font-size="12" fill="#444">FAULT</text><text x="800" y="566" font-size="12" fill="#444">ส้ม</text>
+ <path stroke="#111" stroke-width="2" fill="none" d="M860 434 V540"/><circle cx="860" cy="555" r="15" fill="#f4f6f8" stroke="#111" stroke-width="2"/><path stroke="#111" stroke-width="2" fill="none" d="M849 544 l22 22 M871 544 l-22 22"/><path stroke="#111" stroke-width="2" fill="none" d="M860 570 V760"/><text x="880" y="550" font-size="12" fill="#444">ENC</text><text x="880" y="566" font-size="12" fill="#444">½ รอบ</text>
+</g>
+
+<!-- motor power circuit -->
+<rect x="915" y="470" width="195" height="200" fill="#fffaf0" stroke="#111" stroke-width="2"/>
+<text x="1012" y="494" text-anchor="middle" font-weight="bold">วงจรกำลังมอเตอร์</text>
+<path stroke="#111" stroke-width="2" fill="none" d="M950 520 H990"/><text x="925" y="512" font-size="12" fill="#444">L/+</text>
+<path stroke="#111" stroke-width="2" fill="none" d="M990 520 l20 -8"/><path stroke="#111" stroke-width="2" fill="none" d="M1014 520 H1050"/><text x="975" y="545" font-size="12" fill="#444">K1 (NO)</text>
+<path stroke="#111" stroke-width="2" fill="none" d="M1050 520 V570"/><circle cx="1050" cy="590" r="20" fill="#f4f6f8" stroke="#111" stroke-width="2"/><text x="1050" y="596" text-anchor="middle" font-weight="bold">M</text>
+<path stroke="#111" stroke-width="2" fill="none" d="M1050 610 V640 H950"/><text x="925" y="644" font-size="12" fill="#444">N/−</text>
+<text x="922" y="662" font-size="12" fill="#444">ผ่าน OL/ฟิวส์ ตามพิกัดมอเตอร์</text>
+
+<!-- notes -->
+<text x="20" y="790" font-size="12" fill="#444">แบบทรานซิสเตอร์ (MT/ES, sink): COM0/COM2 ไป 0V และต่อโหลดระหว่าง +24V กับขั้ว Y แทน · ห้ามขับมอเตอร์ตรงจากขั้ว Y ถ้ากระแส &gt; 2A (รีเลย์) / 0.5A (ทรานซิสเตอร์)</text>
+</svg>

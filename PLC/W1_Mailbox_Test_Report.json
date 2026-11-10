@@ -20,6 +20,78 @@
     {
       "name": "Withdrawing remote permission during remote run stops",
       "result": "PASS"
+    },
+    {
+      "name": "W2 reject A: one web request lights Y15 once for ~0.5 s, request auto-clears",
+      "result": "PASS"
+    },
+    {
+      "name": "W2 reject B lights Y16 only",
+      "result": "PASS"
+    },
+    {
+      "name": "W2 two rejects in a row give two separate flashes",
+      "result": "PASS"
+    },
+    {
+      "name": "W2 lamp refused without remote enable, in SIM mode, or without hardware arm",
+      "result": "PASS"
+    },
+    {
+      "name": "W2 indicator lamps work on a training kit with safety inputs X16/X17 not wired",
+      "result": "PASS"
+    },
+    {
+      "name": "W2 web heartbeat loss turns a lit reject lamp off immediately",
+      "result": "PASS"
+    },
+    {
+      "name": "W3 power-up: stopped, Y6 on, Y5 off",
+      "result": "PASS"
+    },
+    {
+      "name": "W3 press X0: Y5 on and stays on after release (latched)",
+      "result": "PASS"
+    },
+    {
+      "name": "W3 press X1: Y6 on, Y5 off, stays stopped",
+      "result": "PASS"
+    },
+    {
+      "name": "W3 a 1-scan (10 ms) tap on X0 still starts",
+      "result": "PASS"
+    },
+    {
+      "name": "W3 X0 and X1 pressed together: STOP wins",
+      "result": "PASS"
+    },
+    {
+      "name": "W3 holding X0 does not restart after X1 (edge-only start)",
+      "result": "PASS"
+    },
+    {
+      "name": "W3 X0 ignored without the web link (no remote enable or no heartbeat)",
+      "result": "PASS"
+    },
+    {
+      "name": "W3 web link lost while running → stops by itself within 0.6 s",
+      "result": "PASS"
+    },
+    {
+      "name": "W3 web START/STOP requests drive the same latch and auto-clear",
+      "result": "PASS"
+    },
+    {
+      "name": "W3 SIM mode or not armed: both lamps off and X0 does nothing",
+      "result": "PASS"
+    },
+    {
+      "name": "W3 reject lamps Y15/Y16 still work while the kit is running",
+      "result": "PASS"
+    },
+    {
+      "name": "Program has exactly one OUT coil per Y output (no double coils)",
+      "result": "PASS"
     }
   ]
 }

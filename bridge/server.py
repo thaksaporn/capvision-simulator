@@ -9,7 +9,10 @@ BASE=Path(__file__).resolve().parent;DIST=BASE.parent/'dist'
 READ=['M0','M1','M2','M503','M504','M505','M506','M510','M511','M512','M513','M7000','M7001','M7190','D7190','D20','D30','X0','X1','X2']
 COMMANDS={'start':'M7010','stop':'M7011','reset':'M7012','safety':'M7013','estop':'M7015'}
 # W2 hybrid: the web simulation runs the machine; each simulated reject is mirrored to a real FX5U output.
-REJECTS={'A':'M7230','B':'M7231'}  # ladder W2 pulses Y1 (YV1) / Y2 (YV2) for 300 ms
+REJECTS={'A':'M7230','B':'M7231'}  # ladder W2 lights Y15 (reject A) / Y16 (reject B) for 0.5 s
+# W3 training kit: PLC latch M7235 is the single run/stop state (X0 START / X1 STOP, lamps Y5/Y6).
+# The web only asks for a change through these request bits; the ladder decides.
+KIT_REQUESTS={'start':'M7236','stop':'M7237'}
 class MX:
  def __init__(self,station):self.station=station;self.process=None;self.replies=queue.Queue()
  def call(self,obj):
@@ -47,7 +50,7 @@ class Bridge:
   if self.kind=='gx':v=self.device.read()
   else:
    v={};
-   for head,count in [('M0',3),('M503',11),('M7000',2),('M7190',1),('X0',3),('M7220',1),('M7230',5),('Y1',2)]:
+   for head,count in [('M0',3),('M503',11),('M7000',2),('M7190',1),('X0',3),('M7220',1),('M7230',9),('Y5',2),('Y15',2)]:
     octal=head[0] in 'XY';start=int(head[1:],8 if octal else 10)
     for i,val in enumerate(self.device.read_bits(head,count)):v[head[0]+(format(start+i,'o') if octal else str(start+i))]=val
    for head,count in [('D20',11),('D7190',1)]:
@@ -70,7 +73,7 @@ class Bridge:
    if kind=='gx' and (self.last_values.get('M7000')!=1 or self.last_values.get('M7001')!=0):raise RuntimeError('GX ต้องอยู่โหมด SIM: M7000=1 / M7001=0')
   except Exception:self.disconnect();raise
   msg={'gx':'GX ต้องใช้ B2 122 บรรทัดและเปิดรับคำสั่งเพื่อจำลองบอร์ด','slmp':'PLC จริงเริ่มต้นเป็นอ่านอย่างเดียว · ไม่ส่งคำสั่ง RUN',
-       'hybrid':'เครื่องจำลองในเว็บ · รีเจคส่งออก Y1/Y2 ของ FX5U หลังเปิดรับคำสั่ง (ต้องมี Ladder W2, M7190, Hardware arm)'}[kind]
+       'hybrid':'เครื่องจำลองในเว็บ + ชุดฝึก FX5U · X0 START / X1 STOP (ไฟ Y5/Y6) · รีเจค A/B ไฟ Y15/Y16 · ติ๊กเปิดรับคำสั่งก่อน (ต้องมี Ladder W2/W3, M7190, Hardware arm)'}[kind]
   return dict(message='อ่านสถานะสำเร็จ · '+msg,kind=kind)
  def permit(self):
   v=self.read()
@@ -91,16 +94,19 @@ class Bridge:
    value=1
    if action=='estop':self.estop=1-self.estop;value=self.estop
    self.write({COMMANDS[action]:value})
-  elif self.kind=='hybrid':raise ValueError('โหมดจำลอง+รีเจค: ปุ่มเครื่องทำงานในเว็บ ไม่ส่งไป PLC')
+  elif self.kind=='hybrid':
+   if action not in KIT_REQUESTS:raise ValueError('โหมดจำลอง+ไฟรีเจค: ส่งไป PLC ได้แค่ START / STOP')
+   self.write({KIT_REQUESTS[action]:1})
   else:
    if action not in ('start','stop','reset'):raise ValueError('Safety reset / E-stop ต้องใช้ฮาร์ดแวร์จริง ไม่ส่งผ่านเว็บ')
    self.write({{'start':'M7200','stop':'M7201','reset':'M7202'}[action]:1})
  def state(self):
   v=self.read();self.last_client=time.monotonic()
   if self.armed and self.kind in ('slmp','hybrid'):self.permit();self.heartbeat=(self.heartbeat+1)&32767;self.write({'D7200':self.heartbeat})
-  return dict(values=v,kind=self.kind,armed=self.armed,snapshot=dict(state=v.get('D20',0),plcFault=v.get('D30',0),boardFault=0,run=v.get('M503',0),tail=v.get('M504',0),enable=v.get('M505',0),ready=v.get('X0',0),healthy=v.get('X1',0),heartbeat=v.get('X2',0),camera=None,a=None,b=None,position=None))
+  kit=dict(run=v.get('M7235',0),link=v.get('M7238',0),lampRun=v.get('Y5',0),lampStop=v.get('Y6',0)) if self.kind=='hybrid' else None
+  return dict(values=v,kind=self.kind,armed=self.armed,kit=kit,snapshot=dict(state=v.get('D20',0),plcFault=v.get('D30',0),boardFault=0,run=v.get('M503',0),tail=v.get('M504',0),enable=v.get('M505',0),ready=v.get('X0',0),healthy=v.get('X1',0),heartbeat=v.get('X2',0),camera=None,a=None,b=None,position=None))
  def reject(self,j):
-  # Only a request bit is written; the ladder decides whether Y1/Y2 may move (W2 interlocks).
+  # Only a request bit is written; the ladder decides whether Y15/Y16 may light (W2 interlocks).
   if self.kind!='hybrid':raise RuntimeError('ส่งรีเจคได้เฉพาะโหมด "จำลองในเว็บ + รีเจคออก FX5U"')
   if not self.armed:raise RuntimeError('ยังไม่ได้เปิดรับคำสั่งควบคุม')
   which=j.get('which')
