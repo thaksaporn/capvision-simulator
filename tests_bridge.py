@@ -56,6 +56,22 @@ class Tests(unittest.TestCase):
   self.fake.mem['M7190']=0
   with self.assertRaises(RuntimeError):b.command('reset')
   self.assertFalse(any(k.startswith(('X','Y')) for k,_ in self.fake.writes));b.disconnect()
+ def test_hybrid_reject_writes_request_bit_only_after_arm_and_permit(self):
+  b=server.Bridge();b.connect(dict(kind='hybrid',host='127.0.0.1',port=self.fake.port));self.assertEqual(self.fake.writes,[])
+  with self.assertRaises(RuntimeError):b.reject(dict(which='A'))          # not armed
+  b.armed=True
+  with self.assertRaises(RuntimeError):b.reject(dict(which='A'))          # PLC has no W1/W2 signature + remote enable
+  self.fake.mem.update(D7190=23107,M7190=1)
+  b.reject(dict(which='A'));b.reject(dict(which='B'))
+  self.assertEqual([w for w in self.fake.writes if w[0].startswith('M')],[('M7230',1),('M7231',1)])
+  with self.assertRaises(ValueError):b.reject(dict(which='C'))
+  with self.assertRaises(ValueError):b.command('start')                  # machine buttons stay in the web sim
+  b.state();self.assertIn(('D7200',1),self.fake.writes)                  # heartbeat keeps the ladder permission alive
+  self.assertFalse(any(k.startswith(('X','Y')) for k,_ in self.fake.writes));b.disconnect()
+ def test_reject_refused_outside_hybrid(self):
+  b=server.Bridge();b.connect(dict(kind='slmp',host='127.0.0.1',port=self.fake.port));b.armed=True;self.fake.mem.update(D7190=23107,M7190=1)
+  with self.assertRaises(RuntimeError):b.reject(dict(which='A'))
+  b.disconnect()
  def test_gx_output_arm_rejected_before_mirror(self):
   b=server.Bridge();b.kind='gx';b.armed=True
   class Device:
@@ -72,6 +88,20 @@ class Tests(unittest.TestCase):
    req=urllib.request.Request(url+'/api/health',headers={'X-CapVision-Code':server.CODE,'Origin':'https://evil.invalid'})
    with self.assertRaises(urllib.error.HTTPError):urllib.request.urlopen(req)
    req=urllib.request.Request(url+'/api/health',headers={'X-CapVision-Code':server.CODE});self.assertTrue(json.load(urllib.request.urlopen(req))['ok'])
+  finally:http.shutdown();http.server_close()
+ def test_hosted_github_page_cors_private_network_and_pairing(self):
+  http=server.ThreadingHTTPServer(('127.0.0.1',0),server.Handler);threading.Thread(target=http.serve_forever,daemon=True).start();url='http://127.0.0.1:'+str(http.server_port);gh='https://thaksaporn.github.io'
+  try:
+   pre=urllib.request.Request(url+'/api/connect',method='OPTIONS',headers={'Origin':gh,'Access-Control-Request-Method':'POST','Access-Control-Request-Headers':'content-type,x-capvision-code','Access-Control-Request-Private-Network':'true'})
+   r=urllib.request.urlopen(pre);self.assertEqual(r.status,204);self.assertEqual(r.headers['Access-Control-Allow-Origin'],gh);self.assertEqual(r.headers['Access-Control-Allow-Private-Network'],'true')
+   bad=urllib.request.Request(url+'/api/connect',method='OPTIONS',headers={'Origin':'https://evil.invalid','Access-Control-Request-Private-Network':'true'})
+   with self.assertRaises(urllib.error.HTTPError) as ex:urllib.request.urlopen(bad)
+   self.assertEqual(ex.exception.code,403)
+   with self.assertRaises(urllib.error.HTTPError) as ex:urllib.request.urlopen(urllib.request.Request(url+'/api/bootstrap',headers={'Origin':gh}))
+   self.assertEqual(ex.exception.code,403)                                # hosted page must type the code, never fetch it
+   with self.assertRaises(urllib.error.HTTPError):urllib.request.urlopen(urllib.request.Request(url+'/api/health',headers={'Origin':gh,'X-CapVision-Code':'wrong'}))
+   r=urllib.request.urlopen(urllib.request.Request(url+'/api/health',headers={'Origin':gh,'X-CapVision-Code':server.CODE}))
+   self.assertTrue(json.load(r)['ok']);self.assertEqual(r.headers['Access-Control-Allow-Origin'],gh)
   finally:http.shutdown();http.server_close()
 if __name__=='__main__':
  suite=unittest.defaultTestLoader.loadTestsFromTestCase(Tests);result=unittest.TextTestRunner(verbosity=2).run(suite)

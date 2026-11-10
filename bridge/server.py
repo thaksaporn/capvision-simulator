@@ -8,6 +8,8 @@ from slmp import SLMP
 BASE=Path(__file__).resolve().parent;DIST=BASE.parent/'dist'
 READ=['M0','M1','M2','M503','M504','M505','M506','M510','M511','M512','M513','M7000','M7001','M7190','D7190','D20','D30','X0','X1','X2']
 COMMANDS={'start':'M7010','stop':'M7011','reset':'M7012','safety':'M7013','estop':'M7015'}
+# W2 hybrid: the web simulation runs the machine; each simulated reject is mirrored to a real FX5U output.
+REJECTS={'A':'M7230','B':'M7231'}  # ladder W2 pulses Y1 (YV1) / Y2 (YV2) for 300 ms
 class MX:
  def __init__(self,station):self.station=station;self.process=None;self.replies=queue.Queue()
  def call(self,obj):
@@ -45,9 +47,9 @@ class Bridge:
   if self.kind=='gx':v=self.device.read()
   else:
    v={};
-   for head,count in [('M0',3),('M503',11),('M7000',2),('M7190',1),('X0',3)]:
-    start=int(head[1:],8 if head[0]=='X' else 10)
-    for i,val in enumerate(self.device.read_bits(head,count)):v[head[0]+(format(start+i,'o') if head[0]=='X' else str(start+i))]=val
+   for head,count in [('M0',3),('M503',11),('M7000',2),('M7190',1),('X0',3),('M7220',1),('M7230',5),('Y1',2)]:
+    octal=head[0] in 'XY';start=int(head[1:],8 if octal else 10)
+    for i,val in enumerate(self.device.read_bits(head,count)):v[head[0]+(format(start+i,'o') if octal else str(start+i))]=val
    for head,count in [('D20',11),('D7190',1)]:
     for i,val in enumerate(self.device.read_words(head,count)):v['D'+str(int(head[1:])+i)]=val
   self.last_values=v;return v
@@ -57,7 +59,7 @@ class Bridge:
    station=int(j.get('station',1))
    if not 0<=station<=1023:raise ValueError('Logical station 0–1023')
    d=MX(station)
-  elif kind=='slmp':
+  elif kind in ('slmp','hybrid'):
    ip=ipaddress.IPv4Address(j.get('host',''));port=int(j.get('port',5000))
    if not(ip.is_private or ip.is_loopback) or ip.is_multicast or ip.is_unspecified:raise ValueError('ใช้ IP ของ PLC ในเครือข่ายส่วนตัว')
    if not 1<=port<=65535:raise ValueError('TCP port ไม่ถูกต้อง')
@@ -67,7 +69,9 @@ class Bridge:
    d.open();self.device=d;self.kind=kind;self.read();self.last_client=time.monotonic()
    if kind=='gx' and (self.last_values.get('M7000')!=1 or self.last_values.get('M7001')!=0):raise RuntimeError('GX ต้องอยู่โหมด SIM: M7000=1 / M7001=0')
   except Exception:self.disconnect();raise
-  return dict(message='อ่านสถานะสำเร็จ · '+('GX ต้องใช้ B2 122 บรรทัดและเปิดรับคำสั่งเพื่อจำลองบอร์ด' if kind=='gx' else 'PLC จริงเริ่มต้นเป็นอ่านอย่างเดียว · ไม่ส่งคำสั่ง RUN'),kind=kind)
+  msg={'gx':'GX ต้องใช้ B2 122 บรรทัดและเปิดรับคำสั่งเพื่อจำลองบอร์ด','slmp':'PLC จริงเริ่มต้นเป็นอ่านอย่างเดียว · ไม่ส่งคำสั่ง RUN',
+       'hybrid':'เครื่องจำลองในเว็บ · รีเจคส่งออก Y1/Y2 ของ FX5U หลังเปิดรับคำสั่ง (ต้องมี Ladder W2, M7190, Hardware arm)'}[kind]
+  return dict(message='อ่านสถานะสำเร็จ · '+msg,kind=kind)
  def permit(self):
   v=self.read()
   if self.kind=='gx':
@@ -87,13 +91,21 @@ class Bridge:
    value=1
    if action=='estop':self.estop=1-self.estop;value=self.estop
    self.write({COMMANDS[action]:value})
+  elif self.kind=='hybrid':raise ValueError('โหมดจำลอง+รีเจค: ปุ่มเครื่องทำงานในเว็บ ไม่ส่งไป PLC')
   else:
    if action not in ('start','stop','reset'):raise ValueError('Safety reset / E-stop ต้องใช้ฮาร์ดแวร์จริง ไม่ส่งผ่านเว็บ')
    self.write({{'start':'M7200','stop':'M7201','reset':'M7202'}[action]:1})
  def state(self):
   v=self.read();self.last_client=time.monotonic()
-  if self.armed and self.kind=='slmp':self.permit();self.heartbeat=(self.heartbeat+1)&32767;self.write({'D7200':self.heartbeat})
+  if self.armed and self.kind in ('slmp','hybrid'):self.permit();self.heartbeat=(self.heartbeat+1)&32767;self.write({'D7200':self.heartbeat})
   return dict(values=v,kind=self.kind,armed=self.armed,snapshot=dict(state=v.get('D20',0),plcFault=v.get('D30',0),boardFault=0,run=v.get('M503',0),tail=v.get('M504',0),enable=v.get('M505',0),ready=v.get('X0',0),healthy=v.get('X1',0),heartbeat=v.get('X2',0),camera=None,a=None,b=None,position=None))
+ def reject(self,j):
+  # Only a request bit is written; the ladder decides whether Y1/Y2 may move (W2 interlocks).
+  if self.kind!='hybrid':raise RuntimeError('ส่งรีเจคได้เฉพาะโหมด "จำลองในเว็บ + รีเจคออก FX5U"')
+  if not self.armed:raise RuntimeError('ยังไม่ได้เปิดรับคำสั่งควบคุม')
+  which=j.get('which')
+  if which not in REJECTS:raise ValueError('which ต้องเป็น A หรือ B')
+  self.permit();self.write({REJECTS[which]:1});self.last_client=time.monotonic()
  def mirror(self,j):
   if not self.armed or self.kind!='gx':raise RuntimeError('Mirror ใช้ได้เฉพาะ GX SIM ที่เปิดรับคำสั่ง')
   self.permit();self.write({'M7050':1,'M7100':int(bool(j.get('ready'))),'M7101':int(bool(j.get('healthy'))),'M7102':int(bool(j.get('heartbeat'))),'M7106':int(bool(j.get('tail'))),'M7052':int(bool(j.get('airFault')))})
@@ -109,7 +121,9 @@ class Bridge:
      self.armed=False
      # Real PLC W1 heartbeat timeout is enforced inside Ladder, independently.
 bridge=Bridge();CODE=secrets.token_urlsafe(18)
-ALLOWED={'https://capvision-machine-lab.nongnye1.chatgpt.site'}
+# Hosted copies of the web app that may call this bridge from the browser. They still need the pairing code
+# printed in the bridge window (/api/bootstrap refuses them), so another site cannot drive the PLC.
+ALLOWED={'https://capvision-machine-lab.nongnye1.chatgpt.site','https://thaksaporn.github.io'}
 class Handler(SimpleHTTPRequestHandler):
  extensions_map={**SimpleHTTPRequestHandler.extensions_map,'.mjs':'text/javascript','.js':'text/javascript','.wasm':'application/wasm','.glb':'model/gltf-binary','.css':'text/css'}
  def __init__(self,*a,**kw):super().__init__(*a,directory=str(DIST),**kw)
@@ -125,7 +139,10 @@ class Handler(SimpleHTTPRequestHandler):
  def authorized(self):return self.origin_ok() and secrets.compare_digest(self.headers.get('X-CapVision-Code',''),CODE)
  def do_OPTIONS(self):
   if not self.origin_ok():return self.reply({'error':'Origin not allowed'},403)
-  self.send_response(204);self.send_header('Access-Control-Allow-Headers','Content-Type, X-CapVision-Code');self.send_header('Access-Control-Allow-Methods','GET,POST,OPTIONS');self.end_headers()
+  self.send_response(204);self.send_header('Access-Control-Allow-Headers','Content-Type, X-CapVision-Code');self.send_header('Access-Control-Allow-Methods','GET,POST,OPTIONS');self.send_header('Access-Control-Max-Age','600')
+  # Chrome Private Network Access: a public https page calling 127.0.0.1 must be explicitly allowed by the target.
+  if self.headers.get('Access-Control-Request-Private-Network','').lower()=='true':self.send_header('Access-Control-Allow-Private-Network','true')
+  self.end_headers()
  def do_GET(self):
   if self.path=='/api/bootstrap':
    origin=self.headers.get('Origin')
@@ -155,14 +172,16 @@ class Handler(SimpleHTTPRequestHandler):
      bridge.permit();bridge.armed=bool(j.get('enabled'))
     elif self.path=='/api/command':bridge.command(j.get('action'))
     elif self.path=='/api/mirror':bridge.mirror(j)
+    elif self.path=='/api/reject':bridge.reject(j)
     else:return self.reply({'error':'Not found'},404)
    return self.reply({'ok':True})
   except Exception as e:return self.reply({'error':str(e)},409)
 def main():
- parser=argparse.ArgumentParser();parser.add_argument('--port',type=int,default=8768);parser.add_argument('--open',action='store_true');args=parser.parse_args()
+ parser=argparse.ArgumentParser();parser.add_argument('--port',type=int,default=8768);parser.add_argument('--open',action='store_true');parser.add_argument('--open-url',help='open this web address (e.g. the GitHub Pages copy) instead of the local page');args=parser.parse_args()
  server=ThreadingHTTPServer(('127.0.0.1',args.port),Handler);threading.Thread(target=bridge.monitor,daemon=True).start()
  print('CapVision local simulator: http://127.0.0.1:'+str(args.port),flush=True);print('Pairing code: '+CODE,flush=True);print('No PLC connected. Open the Connect tab to select a target.',flush=True)
- if args.open:webbrowser.open('http://127.0.0.1:'+str(args.port))
+ if args.open_url:print('Online page: enter the pairing code above in the Connect tab (Local bridge URL http://127.0.0.1:'+str(args.port)+')',flush=True);webbrowser.open(args.open_url)
+ elif args.open:webbrowser.open('http://127.0.0.1:'+str(args.port))
  try:server.serve_forever()
  except KeyboardInterrupt:pass
  finally:bridge.disconnect();server.server_close()
